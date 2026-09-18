@@ -1,0 +1,17 @@
+{
+  "name": "railsync-ai",
+  "version": "1.0.0",
+  "description": "AI-Powered Automatic Block Planning to Maximize Asset Availability for Train Operations on Indian Railways",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test:backend": "npm --prefix backend run test",
+    "test:e2e": "npm --prefix backend run test:e2e"
+  },
+  "keywords": ["railway", "ai", "block-planning", "indian-railways", "sih"],
+  "author": "RailSync Team",
+  "license": "ISC"
+}

@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0a192f;
+  --surface: #0f2444;
+  --card: #132d56;
+  --gold: #eab308;
+  --gold-light: #fde047;
+  --accent: #3b82f6;
+  --crimson: #e11d48;
+  --success: #10b981;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #050b14;
+  color: #e2e8f0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: #0a192f; }
+::-webkit-scrollbar-thumb { background: #1f3e72; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+/* Glass Card Utility */
+.glass-card {
+  background: rgba(15, 36, 68, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 12px;
+}
+
+/* Priority Score Gradient */
+.score-critical { color: #ef4444; }
+.score-high { color: #f97316; }
+.score-medium { color: #eab308; }
+.score-low { color: #10b981; }
+
+/* Animated status dot */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot {
+  animation: blink 2s infinite;
+}
+
+/* Sidebar transition */
+.sidebar-link {
+  transition: background-color 0.2s, color 0.2s, border-left-color 0.2s;
+  border-left: 3px solid transparent;
+}
+.sidebar-link.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-left-color: #3b82f6;
+  color: #93c5fd;
+}
+
+/* Tooltip */
+.tooltip { position: relative; }
+.tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #132d56;
+  border: 1px solid #1f3e72;
+  color: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Photo preview */
+.photo-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #1f3e72;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.photo-thumb:hover { transform: scale(1.05); border-color: #3b82f6; }
