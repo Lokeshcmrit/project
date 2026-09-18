@@ -41,19 +41,14 @@ const roleConfig = {
 export default function LoginPage({ role }: Props) {
   const config = roleConfig[role];
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, logout, user } = useAuth();
 
-  // If already logged in with correct role, redirect
+  // If already logged in with the matching role, redirect to their dashboard
   React.useEffect(() => {
-    if (user) {
-      const map: Record<string, string> = {
-        ADMIN: '/dashboard/admin',
-        DEPARTMENT: '/dashboard/department',
-        USER_PILOT: '/dashboard/user',
-      };
-      navigate(map[user.role] || '/select-role');
+    if (user && user.role === config.expectedRole) {
+      navigate(config.dashRoute);
     }
-  }, [user, navigate]);
+  }, [user, config.expectedRole, config.dashRoute, navigate]);
 
   const [cred, setCred] = useState({ usernameOrEmployeeId: '', password: '', remember: false });
   const [showPass, setShowPass] = useState(false);
@@ -68,23 +63,31 @@ export default function LoginPage({ role }: Props) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!cred.usernameOrEmployeeId.trim()) {
+      setError('Please enter your Employee ID or Email.');
+      return;
+    }
+
+    if (!cred.password) {
+      setError('Please enter your password.');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authAPI.login({
-        usernameOrEmployeeId: cred.usernameOrEmployeeId,
+        usernameOrEmployeeId: cred.usernameOrEmployeeId.trim(),
         password: cred.password,
       });
       const { token, user: loggedUser } = res.data;
 
-      // Role mismatch check
+      // Role mismatch check: REJECT if credentials do not belong to this portal
       if (loggedUser.role !== config.expectedRole) {
-        const map: Record<string, string> = {
-          ADMIN: '/login/admin',
-          DEPARTMENT: '/login/department',
-          USER_PILOT: '/login/user',
-        };
-        login(token, loggedUser);
-        navigate(map[loggedUser.role] || '/select-role');
+        setError(
+          `Invalid Portal: This account is registered as ${loggedUser.role.replace('_', ' ')}. Access to the ${config.label} portal is restricted to ${config.label} personnel only.`
+        );
+        setLoading(false);
         return;
       }
 
@@ -93,13 +96,14 @@ export default function LoginPage({ role }: Props) {
         setPendingUser(loggedUser);
         setPendingToken(token);
         setShowDeptModal(true);
+        setLoading(false);
         return;
       }
 
       login(token, loggedUser);
       navigate(config.dashRoute);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      setError(err.response?.data?.message || 'Invalid Employee ID / Email or Password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -134,6 +138,23 @@ export default function LoginPage({ role }: Props) {
             <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>{config.label}</h1>
             <p className="text-slate-400 text-sm mt-2">RailSync AI — Operations Sign In</p>
           </div>
+
+          {/* Active Session Notice if user is logged into another role */}
+          {user && user.role !== config.expectedRole && (
+            <div className="bg-blue-950/40 border border-blue-800/60 rounded-lg p-3 text-xs text-slate-300 mb-6 flex items-center justify-between">
+              <div>
+                <span className="text-slate-400">Currently active session: </span>
+                <span className="font-semibold text-white">{user.fullName} ({user.role})</span>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="text-red-400 hover:text-red-300 font-semibold underline text-[11px]"
+              >
+                Clear
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-4 py-3 rounded-lg text-sm mb-6">

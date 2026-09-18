@@ -7,7 +7,7 @@ import { requestsAPI, corridorAPI, optimizerAPI, auditAPI, notificationsAPI } fr
 import { useAuth } from '../../store/AuthContext';
 import { getSocket } from '../../sockets/socket';
 import {
-  LayoutDashboard, ClipboardList, Brain, Map, Calendar, BarChart3, ClipboardCheck, Bell, AlertTriangle, X, Check, RefreshCw, ChevronDown, ChevronRight, Info
+  LayoutDashboard, ClipboardList, Brain, Map, Calendar, ClipboardCheck, Bell, AlertTriangle, X, Check, RefreshCw, ChevronDown, ChevronRight, Info
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
@@ -472,41 +472,6 @@ function AdminSchedule() {
   );
 }
 
-// ── Monthly Heatmap ───────────────────────────────────────
-function AdminOptimization() {
-  const [cells, setCells] = useState<any[]>([]);
-  useEffect(() => { optimizerAPI.monthlyHeatmap().then(r => setCells(r.data)).catch(() => {}); }, []);
-
-  const riskColor: Record<string, string> = {
-    LOW: 'bg-green-700/60 text-green-300',
-    MODERATE: 'bg-amber-700/60 text-amber-300',
-    HIGH: 'bg-orange-700/60 text-orange-300',
-    CRITICAL: 'bg-red-700/60 text-red-300',
-  };
-
-  return (
-    <div>
-      <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Outfit' }}>Monthly Asset Availability Heatmap</h2>
-      <p className="text-slate-400 text-sm mb-6">Corridor-wide availability % based on scheduled maintenance windows (30-day view)</p>
-      <div className="grid grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-2">
-        {cells.map((c: any) => (
-          <div key={c.dateStr} className={`${riskColor[c.riskLevel]} rounded-lg p-2 text-center tooltip`} data-tip={`${c.dateStr}: ${c.availabilityPercentage}% available`}>
-            <p className="text-xs font-bold">{c.dayOfMonth}</p>
-            <p className="text-[10px] font-semibold mt-0.5">{c.availabilityPercentage}%</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 flex items-center gap-4 text-xs">
-        {Object.entries(riskColor).map(([k, v]) => (
-          <div key={k} className="flex items-center gap-1.5">
-            <span className={`w-3 h-3 rounded ${v.split(' ')[0]}`} />
-            <span className="text-slate-400 capitalize">{k.toLowerCase()}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ── Audit Log ─────────────────────────────────────────────
 function AdminAudit() {
@@ -591,7 +556,6 @@ const navItems = [
   { icon: ClipboardList, label: 'Request Queue', to: '/dashboard/admin/requests' },
   { icon: Brain, label: 'AI Optimizer', to: '/dashboard/admin/optimizer' },
   { icon: Calendar, label: 'Weekly Schedule', to: '/dashboard/admin/schedule' },
-  { icon: BarChart3, label: 'Monthly Heatmap', to: '/dashboard/admin/optimization' },
   { icon: ClipboardCheck, label: 'Audit Log', to: '/dashboard/admin/audit' },
   { icon: Bell, label: 'Notifications', to: '/dashboard/admin/notifications' },
 ];
@@ -605,7 +569,6 @@ export default function AdminDashboard() {
         <Route path="requests" element={<AdminRequests />} />
         <Route path="optimizer" element={<AdminOptimizerStudio />} />
         <Route path="schedule" element={<AdminSchedule />} />
-        <Route path="optimization" element={<AdminOptimization />} />
         <Route path="audit" element={<AdminAudit />} />
         <Route path="notifications" element={<AdminNotifications />} />
         <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />

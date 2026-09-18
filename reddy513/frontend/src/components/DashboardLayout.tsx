@@ -4,7 +4,7 @@ import { useAuth } from '../store/AuthContext';
 import { notificationsAPI } from '../api/client';
 import { getSocket } from '../sockets/socket';
 import {
-  LayoutDashboard, Train, Map, AlertTriangle, Bell, User, LogOut,
+  Train, Bell, LogOut,
   ChevronLeft, ChevronRight, Shield, Wrench, Activity
 } from 'lucide-react';
 
@@ -65,17 +65,20 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
   };
 
-  const handleLogout = () => { logout(); navigate('/select-role'); };
+  const handleLogout = () => {
+    logout();
+    navigate('/select-role');
+  };
 
   const roleIcon = user?.role === 'ADMIN' ? Shield : user?.role === 'DEPARTMENT' ? Wrench : Train;
   const RoleIcon = roleIcon;
 
   return (
-    <div className="flex h-screen bg-[#050b14] overflow-hidden">
+    <div className="flex h-screen bg-[#050b14] overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className={`flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'} bg-[#0a192f] border-r border-[#1f3e72] flex-shrink-0`}>
+      <aside className={`flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'} bg-[#0a192f] border-r border-[#1f3e72] flex-shrink-0 z-20`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-[#1f3e72]">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-[#1f3e72]">
           <span className="text-2xl">🚆</span>
           {!collapsed && (
             <div>
@@ -95,7 +98,7 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
                 key={item.to}
                 to={item.to}
                 className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                  ${active ? 'active text-blue-300' : 'text-slate-400 hover:text-slate-200 hover:bg-[#132d56]'}`}
+                  ${active ? 'active text-blue-300 bg-[#132d56]' : 'text-slate-400 hover:text-slate-200 hover:bg-[#132d56]/50'}`}
               >
                 <Icon size={17} className="flex-shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
@@ -104,15 +107,15 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
           })}
         </nav>
 
-        {/* Collapse + User */}
+        {/* Collapse + User Info */}
         <div className="border-t border-[#1f3e72] p-3">
           <div className={`flex items-center gap-2 mb-3 ${collapsed ? 'justify-center' : ''}`}>
-            <div className="w-8 h-8 rounded-full bg-blue-800 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-blue-800/80 border border-blue-500/40 flex items-center justify-center flex-shrink-0">
               <RoleIcon size={14} className="text-blue-300" />
             </div>
             {!collapsed && (
-              <div className="min-w-0">
-                <div className="text-xs font-semibold text-white truncate">{user?.fullName}</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-semibold text-white truncate">{user?.fullName || 'Rail Officer'}</div>
                 <div className="text-[10px] text-slate-400 truncate">{user?.employeeId}</div>
               </div>
             )}
@@ -129,6 +132,7 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-[#132d56]"
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             </button>
@@ -136,45 +140,62 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main Container */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="h-14 border-b border-[#1f3e72] flex items-center justify-between px-6 bg-[#0a192f]/60 backdrop-blur-sm flex-shrink-0">
+        {/* Top Header */}
+        <header className="h-14 border-b border-[#1f3e72] flex items-center justify-between px-6 bg-[#0a192f]/80 backdrop-blur-md flex-shrink-0 z-30">
+          {/* Corridor Live Status */}
           <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Activity size={14} className="text-green-400 live-dot" />
-            <span>Secunderabad ↔ Visakhapatnam Corridor</span>
-            <span className="px-2 py-0.5 bg-green-900/40 text-green-400 rounded text-[10px] font-bold uppercase">LIVE</span>
+            <Activity size={14} className="text-green-400 live-dot animate-pulse" />
+            <span className="hidden sm:inline">Secunderabad Jn ↔ Visakhapatnam Jn Corridor</span>
+            <span className="sm:hidden">SC ↔ VSKP</span>
+            <span className="px-2 py-0.5 bg-green-900/40 text-green-400 border border-green-700/40 rounded text-[10px] font-bold uppercase">LIVE</span>
           </div>
+
+          {/* Top Actions: Notifications & Sign Out */}
           <div className="flex items-center gap-3">
+            {/* Notifications Bell */}
             <Link
               to={`/dashboard/${user?.role === 'ADMIN' ? 'admin' : user?.role === 'DEPARTMENT' ? 'department' : 'user'}/notifications`}
               className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#132d56] transition-colors"
+              title="Notifications"
             >
               <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white shadow-lg animate-pulse">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
             </Link>
+
+            {/* Header Sign Out */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-[#132d56] transition-colors border border-transparent hover:border-red-500/30"
+              title="Sign Out"
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Page Content Viewport */}
+        <div className="flex-1 overflow-y-auto p-6 bg-[#050b14]">
           {children}
         </div>
       </main>
 
-      {/* Toast Notifications */}
+      {/* Live Toast Alerts */}
       <div className="fixed bottom-6 right-6 space-y-2 z-50">
         {toasts.map(t => (
           <div
             key={t.id}
-            className={`max-w-sm px-4 py-3 rounded-xl text-sm font-medium shadow-2xl border transition-all
-              ${t.type === 'warning' ? 'bg-amber-900/90 border-amber-700 text-amber-200' :
-                t.type === 'success' ? 'bg-emerald-900/90 border-emerald-700 text-emerald-200' :
-                'bg-blue-900/90 border-blue-700 text-blue-200'}`}
+            className={`max-w-sm px-4 py-3 rounded-xl text-sm font-medium shadow-2xl border transition-all backdrop-blur-md
+              ${t.type === 'warning' ? 'bg-amber-950/90 border-amber-600 text-amber-200' :
+                t.type === 'success' ? 'bg-emerald-950/90 border-emerald-600 text-emerald-200' :
+                'bg-blue-950/90 border-blue-600 text-blue-200'}`}
           >
             <span className="mr-2">{t.type === 'warning' ? '⚠️' : t.type === 'success' ? '✅' : '🔔'}</span>
             {t.msg.length > 80 ? t.msg.slice(0, 80) + '…' : t.msg}

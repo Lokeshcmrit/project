@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef, ReactNode } from 'react';
+import React, { useEffect, useState, ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
-import { notificationsAPI, authAPI } from '../api/client';
+import { notificationsAPI } from '../api/client';
 import { getSocket } from '../sockets/socket';
 import {
-  LayoutDashboard, Train, Map, AlertTriangle, Bell, User, LogOut,
-  ChevronLeft, ChevronRight, Shield, Wrench, Activity, ChevronDown,
-  Zap, Loader2, ArrowLeftRight, Check
+  Train, Bell, LogOut,
+  ChevronLeft, ChevronRight, Shield, Wrench, Activity
 } from 'lucide-react';
 
 interface NavItem {
@@ -22,82 +21,16 @@ interface Props {
   children: ReactNode;
 }
 
-const SWITCH_ACCOUNTS = [
-  {
-    roleKey: 'ADMIN',
-    label: 'Operations Admin (OCC)',
-    sublabel: 'Corridor Control & AI Studio',
-    id: 'admin@railsync.ir',
-    pw: 'Admin@123',
-    icon: Shield,
-    color: 'text-yellow-400',
-    route: '/dashboard/admin',
-  },
-  {
-    roleKey: 'DEPARTMENT_ENG',
-    label: 'Civil Engineering (P-Way)',
-    sublabel: 'Track Maintenance Gang',
-    id: 'engg@railsync.ir',
-    pw: 'Password@123',
-    icon: Wrench,
-    color: 'text-emerald-400',
-    route: '/dashboard/department',
-  },
-  {
-    roleKey: 'DEPARTMENT_TD',
-    label: 'Traction Distribution (OHE)',
-    sublabel: '25kV Overhead Catenary',
-    id: 'td@railsync.ir',
-    pw: 'Password@123',
-    icon: Zap,
-    color: 'text-amber-400',
-    route: '/dashboard/department',
-  },
-  {
-    roleKey: 'DEPARTMENT_SNT',
-    label: 'Signal & Telecom (S&T)',
-    sublabel: 'Point Machines & Signals',
-    id: 'sandt@railsync.ir',
-    pw: 'Password@123',
-    icon: Activity,
-    color: 'text-cyan-400',
-    route: '/dashboard/department',
-  },
-  {
-    roleKey: 'USER_PILOT',
-    label: 'Chief Loco Pilot',
-    sublabel: 'Train 12728 Godavari Exp',
-    id: 'pilot@railsync.ir',
-    pw: 'Password@123',
-    icon: Train,
-    color: 'text-blue-400',
-    route: '/dashboard/user',
-  },
-];
-
 export default function DashboardLayout({ navItems, roleLabel, roleColor, children }: Props) {
-  const { user, login, logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [unread, setUnread] = useState(0);
   const [toasts, setToasts] = useState<{ id: number; msg: string; type: string }[]>([]);
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     notificationsAPI.unreadCount().then(r => setUnread(r.data.unreadCount)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setSwitcherOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
   useEffect(() => {
@@ -135,27 +68,6 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
   const handleLogout = () => {
     logout();
     navigate('/select-role');
-  };
-
-  const handleRoleSwitch = async (acc: typeof SWITCH_ACCOUNTS[0]) => {
-    if (user?.email === acc.id) {
-      setSwitcherOpen(false);
-      return;
-    }
-    setSwitching(true);
-    try {
-      const res = await authAPI.login({
-        usernameOrEmployeeId: acc.id,
-        password: acc.pw,
-      });
-      login(res.data.token, res.data.user);
-      setSwitcherOpen(false);
-      navigate(acc.route);
-    } catch (err) {
-      console.error('Role switch failed', err);
-    } finally {
-      setSwitching(false);
-    }
   };
 
   const roleIcon = user?.role === 'ADMIN' ? Shield : user?.role === 'DEPARTMENT' ? Wrench : Train;
@@ -240,85 +152,8 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
             <span className="px-2 py-0.5 bg-green-900/40 text-green-400 border border-green-700/40 rounded text-[10px] font-bold uppercase">LIVE</span>
           </div>
 
-          {/* Top Actions: Role Switcher & Notifications */}
+          {/* Top Actions: Notifications & Sign Out */}
           <div className="flex items-center gap-3">
-            {/* Quick Role Switcher Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setSwitcherOpen(!switcherOpen)}
-                disabled={switching}
-                className="flex items-center gap-2 bg-[#0d2244] border border-blue-500/40 hover:border-blue-400 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all shadow-sm"
-              >
-                {switching ? (
-                  <Loader2 size={13} className="animate-spin text-blue-400" />
-                ) : (
-                  <ArrowLeftRight size={13} className="text-yellow-400" />
-                )}
-                <span className="hidden md:inline text-slate-300">Switch Role:</span>
-                <span className={roleColor}>{roleLabel}</span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform ${switcherOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {switcherOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-[#09172e] border border-[#1f3e72] rounded-xl shadow-2xl p-2 z-50">
-                  <div className="px-3 py-2 border-b border-[#1f3e72] mb-1">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Switch Operational Dashboard</p>
-                    <p className="text-[10px] text-slate-500">1-click instant login as official personnel</p>
-                  </div>
-
-                  <div className="space-y-1">
-                    {SWITCH_ACCOUNTS.map(acc => {
-                      const Icon = acc.icon;
-                      const isCurrent = user?.email === acc.id;
-                      return (
-                        <button
-                          key={acc.id}
-                          type="button"
-                          onClick={() => handleRoleSwitch(acc)}
-                          className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors text-xs ${
-                            isCurrent
-                              ? 'bg-blue-900/30 border border-blue-600/40 text-white'
-                              : 'hover:bg-[#132d56] text-slate-300'
-                          }`}
-                        >
-                          <div className="w-7 h-7 rounded-md bg-[#050b14] flex items-center justify-center flex-shrink-0">
-                            <Icon size={14} className={acc.color} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="font-semibold flex items-center gap-1.5">
-                              <span>{acc.label}</span>
-                              {isCurrent && <span className="text-[9px] px-1.5 py-0.2 bg-blue-500/20 text-blue-300 rounded font-mono">ACTIVE</span>}
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate">{acc.sublabel}</div>
-                          </div>
-                          {isCurrent && <Check size={14} className="text-blue-400 flex-shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-2 pt-2 border-t border-[#1f3e72] flex items-center justify-between text-xs px-2">
-                    <Link
-                      to="/select-role"
-                      onClick={() => setSwitcherOpen(false)}
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      Role Portal →
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Notifications Bell */}
             <Link
               to={`/dashboard/${user?.role === 'ADMIN' ? 'admin' : user?.role === 'DEPARTMENT' ? 'department' : 'user'}/notifications`}
@@ -332,6 +167,17 @@ export default function DashboardLayout({ navItems, roleLabel, roleColor, childr
                 </span>
               )}
             </Link>
+
+            {/* Header Sign Out */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-[#132d56] transition-colors border border-transparent hover:border-red-500/30"
+              title="Sign Out"
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
         </header>
 

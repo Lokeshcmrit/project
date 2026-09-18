@@ -27,13 +27,58 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return; }
-    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return; }
+
+    // Strict validation
+    if (!form.fullName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    if (!form.employeeId.trim()) {
+      setError('Please enter your Employee ID (e.g., EMP-ENG-102).');
+      return;
+    }
+
+    if (!form.email.trim() || !form.email.includes('@') || !form.email.includes('.')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!form.mobileNumber.trim()) {
+      setError('Please enter your mobile contact number.');
+      return;
+    }
+
+    if (form.role === 'DEPARTMENT' && !form.department) {
+      setError('Please select your specific Maintenance Department (Engineering, Traction Distribution, or Signal & Telecom).');
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match. Please verify both password fields.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload: any = { ...form };
-      delete payload.confirmPassword;
-      if (!payload.department) delete payload.department;
+      const payload: any = {
+        fullName: form.fullName.trim(),
+        employeeId: form.employeeId.trim(),
+        email: form.email.trim().toLowerCase(),
+        mobileNumber: form.mobileNumber.trim(),
+        password: form.password,
+        role: form.role,
+      };
+
+      if (form.role === 'DEPARTMENT') {
+        payload.department = form.department;
+      }
+
       const res = await authAPI.register(payload);
       setSuccess(true);
       setTimeout(() => {
@@ -44,7 +89,7 @@ export default function RegisterPage() {
         else navigate('/dashboard/user');
       }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || 'Invalid registration details. Please verify your data and try again.');
     } finally {
       setLoading(false);
     }
@@ -62,7 +107,7 @@ export default function RegisterPage() {
             <span className="text-4xl">🚆</span>
             <div>
               <div className="text-xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>RailSync AI</div>
-              <div className="text-xs text-yellow-400 font-semibold tracking-widest uppercase">Smart India Hackathon 2024</div>
+              <div className="text-xs text-yellow-400 font-semibold tracking-widest uppercase">Smart India Hackathon</div>
             </div>
           </div>
           <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Outfit' }}>Automatic Block Planning</h1>
@@ -81,7 +126,7 @@ export default function RegisterPage() {
             ))}
           </div>
         </div>
-        <div className="text-xs text-slate-600">Pilot Corridor: Secunderabad Jn ↔ Visakhapatnam Jn • South Central Railway</div>
+        <div className="text-xs text-slate-600">Fixed Infrastructure Planning • TMS • TDMS • SMMS • COA</div>
       </div>
 
       {/* Right Panel */}
@@ -89,7 +134,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>Create Account</h2>
-            <span className="px-2 py-1 bg-yellow-900/40 border border-yellow-700/50 text-yellow-400 rounded text-[10px] font-bold uppercase tracking-wider">Prototype / Demo</span>
+            <span className="px-2 py-1 bg-yellow-900/40 border border-yellow-700/50 text-yellow-400 rounded text-[10px] font-bold uppercase tracking-wider">Railway Staff</span>
           </div>
 
           {success ? (
@@ -139,7 +184,7 @@ export default function RegisterPage() {
                 {form.role === 'DEPARTMENT' && (
                   <div>
                     <label className={labelCls}>Department</label>
-                    <select className={inputCls} value={form.department} onChange={e => set('department', e.target.value)}>
+                    <select className={inputCls} value={form.department} onChange={e => set('department', e.target.value)} required>
                       <option value="">Select Department</option>
                       <option value="ENGINEERING">Engineering</option>
                       <option value="TRACTION_DISTRIBUTION">Traction Distribution (TD)</option>
