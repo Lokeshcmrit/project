@@ -5,5 +5,10 @@ build
 *.log
 uploads/*
 !uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
 coverage
 .cache
+pgdata
+.vercel
+

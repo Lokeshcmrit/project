@@ -64,4 +64,26 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       this.server.emit(event, payload);
     }
   }
+
+  broadcastCorridorAlert(alert: {
+    id: string;
+    title: string;
+    message: string;
+    sourceRole: string;
+    sourceDepartment?: string;
+    targetAudience: string;
+    targetRoles?: string[];
+    severity?: string;
+    segmentLabel?: string;
+    priorityScore?: number;
+    details?: string;
+    requestId?: string;
+    sound?: 'alarm' | 'emergency' | 'warning' | 'chime';
+    timestamp?: string;
+  }) {
+    if (this.server) {
+      this.server.emit('corridor:alert', alert);
+    }
+  }
 }
+

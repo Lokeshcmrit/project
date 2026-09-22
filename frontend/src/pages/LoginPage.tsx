@@ -74,6 +74,24 @@ export default function LoginPage({ role }: Props) {
       return;
     }
 
+    const DEMO_IDS = [
+      'admin@railsync.ir',
+      'engg@railsync.ir',
+      'td@railsync.ir',
+      'sandt@railsync.ir',
+      'pilot@railsync.ir',
+      'emp-adm-001',
+      'emp-eng-101',
+      'emp-td-201',
+      'emp-snt-301',
+      'emp-plt-501',
+    ];
+
+    if (DEMO_IDS.includes(cred.usernameOrEmployeeId.trim().toLowerCase())) {
+      setError('Demo accounts are disabled. Please register your own personnel account to log in.');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authAPI.login({
@@ -133,11 +151,12 @@ export default function LoginPage({ role }: Props) {
 
         {/* Card */}
         <div className={`glass-card border ${config.borderColor} p-8`}>
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="text-5xl mb-3">{config.icon}</div>
             <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>{config.label}</h1>
-            <p className="text-slate-400 text-sm mt-2">RailSync AI — Operations Sign In</p>
+            <p className="text-slate-400 text-sm mt-1">RailSync AI — Sign In</p>
           </div>
+
 
           {/* Active Session Notice if user is logged into another role */}
           {user && user.role !== config.expectedRole && (
@@ -165,7 +184,7 @@ export default function LoginPage({ role }: Props) {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Employee ID / Email
+                Registered Employee ID / Email
               </label>
               <input
                 id="login-credential"
@@ -214,9 +233,16 @@ export default function LoginPage({ role }: Props) {
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-600 mt-6">
-            Not registered yet? <Link to="/register" className="text-blue-400 hover:text-blue-300">Create account</Link>
-          </p>
+          {/* Dedicated Register Button */}
+          <div className="mt-6 pt-5 border-t border-[#1f3e72] text-center">
+            <p className="text-xs text-slate-400 mb-3">Don't have a registered account yet?</p>
+            <Link
+              to={`/register?role=${config.expectedRole}`}
+              className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 border border-blue-500/50 transition-colors shadow-md"
+            >
+              Register New {config.label} Account →
+            </Link>
+          </div>
         </div>
       </div>
 

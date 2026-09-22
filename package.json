@@ -4,6 +4,7 @@
   "description": "AI-Powered Automatic Block Planning to Maximize Asset Availability for Train Operations on Indian Railways",
   "scripts": {
     "postinstall": "npm --prefix frontend install && npm --prefix backend install",
+    "start": "powershell -ExecutionPolicy Bypass -File ./start-project.ps1",
     "dev:backend": "npm --prefix backend run start:dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "build:backend": "npm --prefix backend run build",

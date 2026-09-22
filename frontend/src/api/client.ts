@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = 'http://localhost:4000';
+const BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000';
 
 const api = axios.create({ baseURL: BASE });
 
@@ -59,6 +59,14 @@ export const notificationsAPI = {
   unreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id: string) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.patch('/notifications/read-all'),
+  broadcastAlert: (data: {
+    title: string;
+    message: string;
+    severity?: string;
+    segmentLabel?: string;
+    sound?: string;
+    details?: string;
+  }) => api.post('/notifications/broadcast-alert', data),
 };
 
 // Audit

@@ -22,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           {/* Public routes */}
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/select-role" element={<RoleSelectPage />} />
+          <Route path="/login" element={<Navigate to="/select-role" replace />} />
           <Route path="/login/admin" element={<LoginPage role="admin" />} />
           <Route path="/login/user" element={<LoginPage role="user" />} />
           <Route path="/login/department" element={<LoginPage role="department" />} />

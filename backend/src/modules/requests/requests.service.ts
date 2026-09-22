@@ -128,11 +128,28 @@ export class RequestsService {
       request.id,
     );
 
-    // Real-time Push to Admin Queue
+    // Real-time Push to Admin Queue & Loco Pilots
     this.gateway.broadcastToAdmins('request:new', request);
-
-    // Notify Reporting Department
     this.gateway.broadcastToDepartment(dto.reportingDepartment, 'request:new', request);
+    this.gateway.broadcastAll('request:new', request);
+
+    // Broadcast Corridor Alert with Alarm sound to Admin & Chief Loco Pilots
+    this.gateway.broadcastCorridorAlert({
+      id: `alert-req-${request.id}-${Date.now()}`,
+      title: `🚨 Track Block Possession Request Submitted`,
+      message: `${dto.reportingDepartment} department submitted a new maintenance request on ${segment.label}. Priority Score: ${priorityScore}. Caution order advisory for Loco Pilots.`,
+      sourceRole: 'DEPARTMENT',
+      sourceDepartment: dto.reportingDepartment,
+      targetAudience: 'Operations Admin & Chief Loco Pilots',
+      targetRoles: ['ADMIN', 'USER_PILOT'],
+      severity: request.severity,
+      segmentLabel: segment.label,
+      priorityScore,
+      details: request.description,
+      requestId: request.id,
+      sound: request.severity === 'CRITICAL' || request.severity === 'HIGH' ? 'emergency' : 'alarm',
+      timestamp: new Date().toISOString(),
+    });
 
     // Save persistent notification for reporter
     await this.notificationsService.createNotification(
@@ -295,6 +312,23 @@ export class RequestsService {
       );
     }
 
+    // 4. Corridor-Wide Emergency/Operation Alert Broadcast with Alarm Sound
+    this.gateway.broadcastCorridorAlert({
+      id: `alert-sched-${updated.id}-${Date.now()}`,
+      title: `🗓️ Maintenance Block Possession Scheduled by Admin`,
+      message: `OCC Admin scheduled track block on ${updated.segment.label} (${scheduledStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${scheduledEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}). Caution orders active.`,
+      sourceRole: 'ADMIN',
+      sourceDepartment: 'OPERATIONS_CONTROL',
+      targetAudience: 'All Maintenance Departments & Loco Pilots',
+      severity: updated.severity,
+      segmentLabel: updated.segment.label,
+      priorityScore: updated.priorityScore,
+      details: `Crew: ${dto.assignedCrewId}. Co-departments: ${updated.requiredDepartments.join(', ')}`,
+      requestId: updated.id,
+      sound: 'alarm',
+      timestamp: new Date().toISOString(),
+    });
+
     return updated;
   }
 
@@ -412,6 +446,22 @@ export class RequestsService {
     this.gateway.broadcastToAdmins('request:statusChanged', updated);
     this.gateway.broadcastToDepartment(existing.reportingDepartment, 'request:statusChanged', updated);
 
+    this.gateway.broadcastCorridorAlert({
+      id: `alert-start-${updated.id}-${Date.now()}`,
+      title: `⚡ Track Possession Commenced (Gang on Track)`,
+      message: `${existing.reportingDepartment} maintenance gang has commenced physical work on ${updated.segment.label}. Track status is now OCCUPIED.`,
+      sourceRole: 'DEPARTMENT',
+      sourceDepartment: existing.reportingDepartment,
+      targetAudience: 'Operations Admin, All Maintenance Gangs, Loco Pilots',
+      severity: updated.severity,
+      segmentLabel: updated.segment.label,
+      priorityScore: updated.priorityScore,
+      details: updated.title,
+      requestId: updated.id,
+      sound: 'warning',
+      timestamp: new Date().toISOString(),
+    });
+
     return updated;
   }
 
@@ -454,6 +504,22 @@ export class RequestsService {
     );
 
     this.gateway.broadcastAll('request:statusChanged', updated);
+
+    this.gateway.broadcastCorridorAlert({
+      id: `alert-res-${updated.id}-${Date.now()}`,
+      title: `✅ Track Block Cleared & Operations Restored`,
+      message: `Maintenance completed on ${updated.segment.label}. Track possession returned to Traffic. Normal speed resumed.`,
+      sourceRole: 'DEPARTMENT',
+      sourceDepartment: existing.reportingDepartment,
+      targetAudience: 'Operations Admin, All Maintenance Gangs, Loco Pilots',
+      severity: 'LOW',
+      segmentLabel: updated.segment.label,
+      priorityScore: 0,
+      details: updated.title,
+      requestId: updated.id,
+      sound: 'chime',
+      timestamp: new Date().toISOString(),
+    });
 
     return updated;
   }

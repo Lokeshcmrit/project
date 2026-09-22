@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../api/client';
 import { useAuth } from '../store/AuthContext';
 import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedRole = searchParams.get('role');
+  const initialRole = ['ADMIN', 'USER_PILOT', 'DEPARTMENT'].includes(requestedRole || '')
+    ? (requestedRole as string)
+    : 'DEPARTMENT';
+
   const { login } = useAuth();
   const [form, setForm] = useState({
     fullName: '',
@@ -14,9 +20,20 @@ export default function RegisterPage() {
     mobileNumber: '',
     password: '',
     confirmPassword: '',
-    role: 'DEPARTMENT',
-    department: '',
+    role: initialRole,
+    department: initialRole === 'DEPARTMENT' ? 'ENGINEERING' : '',
   });
+
+  React.useEffect(() => {
+    if (requestedRole && ['ADMIN', 'USER_PILOT', 'DEPARTMENT'].includes(requestedRole)) {
+      setForm(prev => ({
+        ...prev,
+        role: requestedRole,
+        department: requestedRole === 'DEPARTMENT' ? (prev.department || 'ENGINEERING') : '',
+      }));
+    }
+  }, [requestedRole]);
+
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +44,27 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const DEMO_IDS = [
+      'admin@railsync.ir',
+      'engg@railsync.ir',
+      'td@railsync.ir',
+      'sandt@railsync.ir',
+      'pilot@railsync.ir',
+      'emp-adm-001',
+      'emp-eng-101',
+      'emp-td-201',
+      'emp-snt-301',
+      'emp-plt-501',
+    ];
+
+    if (
+      DEMO_IDS.includes(form.email.trim().toLowerCase()) ||
+      DEMO_IDS.includes(form.employeeId.trim().toLowerCase())
+    ) {
+      setError('These credentials are reserved legacy accounts. Please choose your own unique Email and Employee ID.');
+      return;
+    }
 
     // Strict validation
     if (!form.fullName.trim()) {
@@ -132,10 +170,16 @@ export default function RegisterPage() {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="flex items-center justify-between mb-8">
+          {/* Back to roles */}
+          <Link to="/select-role" className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-xs mb-6 transition-colors">
+            ← Back to Role Selection
+          </Link>
+
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>Create Account</h2>
             <span className="px-2 py-1 bg-yellow-900/40 border border-yellow-700/50 text-yellow-400 rounded text-[10px] font-bold uppercase tracking-wider">Railway Staff</span>
           </div>
+
 
           {success ? (
             <div className="text-center py-10">

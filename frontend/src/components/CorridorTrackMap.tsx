@@ -183,25 +183,22 @@ export default function CorridorTrackMap({
           <div className="flex items-center bg-[#0a192f] border border-[#1f3e72] rounded-lg p-0.5 text-xs">
             <button
               onClick={() => setFilter('ALL')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                filter === 'ALL' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${filter === 'ALL' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
             >
               All Sections ({segments.length})
             </button>
             <button
               onClick={() => setFilter('DISRUPTED_CONFLICT')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                filter === 'DISRUPTED_CONFLICT' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${filter === 'DISRUPTED_CONFLICT' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
             >
               Disruptions & Conflicts
             </button>
             <button
               onClick={() => setFilter('POSSESSIONS')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                filter === 'POSSESSIONS' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${filter === 'POSSESSIONS' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                }`}
             >
               Active Possessions
             </button>
@@ -258,11 +255,10 @@ export default function CorridorTrackMap({
                     {/* Station Node (Left Station) */}
                     <div className="flex flex-col items-center flex-shrink-0 group cursor-pointer">
                       <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition-all ${
-                          seg.fromStation?.type === 'junction'
-                            ? 'bg-blue-600/80 text-white ring-2 ring-blue-400/50 shadow-lg'
-                            : 'bg-slate-800 text-slate-200 border border-slate-700'
-                        }`}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition-all ${seg.fromStation?.type === 'junction'
+                          ? 'bg-blue-600/80 text-white ring-2 ring-blue-400/50 shadow-lg'
+                          : 'bg-slate-800 text-slate-200 border border-slate-700'
+                          }`}
                         title={`${seg.fromStation?.name} (${seg.fromStation?.code})`}
                       >
                         {seg.fromStation?.code || 'STN'}
@@ -278,18 +274,15 @@ export default function CorridorTrackMap({
                     {/* Track Segment Connector Line */}
                     <div
                       onClick={() => handleSegmentClick(seg)}
-                      className={`relative flex-1 min-w-[75px] mx-1 py-3 px-2 rounded-xl cursor-pointer border transition-all duration-200 group ${
-                        theme.bg
-                      } ${theme.border} ${theme.glow} ${
-                        isSelected ? 'ring-2 ring-white scale-105 z-20 shadow-2xl' : 'hover:scale-[1.02]'
-                      }`}
+                      className={`relative flex-1 min-w-[75px] mx-1 py-3 px-2 rounded-xl cursor-pointer border transition-all duration-200 group ${theme.bg
+                        } ${theme.border} ${theme.glow} ${isSelected ? 'ring-2 ring-white scale-105 z-20 shadow-2xl' : 'hover:scale-[1.02]'
+                        }`}
                     >
                       {/* Segment Dual/Single Rail Visual */}
                       <div className="space-y-1 my-1">
                         <div
-                          className={`h-1 rounded-full transition-colors ${
-                            seg.isSingleLine ? 'bg-amber-400' : theme.text.replace('text-', 'bg-')
-                          }`}
+                          className={`h-1 rounded-full transition-colors ${seg.isSingleLine ? 'bg-amber-400' : theme.text.replace('text-', 'bg-')
+                            }`}
                         />
                         {!seg.isSingleLine && (
                           <div
@@ -407,9 +400,8 @@ export default function CorridorTrackMap({
                   {selectedSegment.label}
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded text-xs font-bold uppercase border ${
-                    statusTheme[selectedSegment.status]?.text
-                  } ${statusTheme[selectedSegment.status]?.bg} ${statusTheme[selectedSegment.status]?.border}`}
+                  className={`px-2 py-0.5 rounded text-xs font-bold uppercase border ${statusTheme[selectedSegment.status]?.text
+                    } ${statusTheme[selectedSegment.status]?.bg} ${statusTheme[selectedSegment.status]?.border}`}
                 >
                   {selectedSegment.status.replace('_', ' ')}
                 </span>
@@ -493,10 +485,9 @@ export default function CorridorTrackMap({
                     <div key={r.id} className="p-2.5 bg-slate-900/80 rounded-lg border border-[#1f3e72] text-xs">
                       <div className="flex items-center justify-between">
                         <p className="font-bold text-white truncate max-w-[220px]">{r.title}</p>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          r.severity === 'CRITICAL' ? 'bg-red-900/60 text-red-300' :
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${r.severity === 'CRITICAL' ? 'bg-red-900/60 text-red-300' :
                           r.severity === 'HIGH' ? 'bg-orange-900/60 text-orange-300' : 'bg-amber-900/60 text-amber-300'
-                        }`}>
+                          }`}>
                           {r.severity}
                         </span>
                       </div>

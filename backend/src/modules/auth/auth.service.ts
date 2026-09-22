@@ -71,8 +71,28 @@ export class AuthService {
       },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid Employee ID / Email or Password');
+    // Demo accounts restriction: Demo accounts are blocked from logging in. Only registered accounts can log in.
+    const DEMO_IDENTIFIERS = [
+      'admin@railsync.ir',
+      'engg@railsync.ir',
+      'td@railsync.ir',
+      'sandt@railsync.ir',
+      'pilot@railsync.ir',
+      'emp-adm-001',
+      'emp-eng-101',
+      'emp-td-201',
+      'emp-snt-301',
+      'emp-plt-501',
+    ];
+
+    if (
+      DEMO_IDENTIFIERS.includes(identifier) ||
+      DEMO_IDENTIFIERS.includes(user.email.toLowerCase()) ||
+      DEMO_IDENTIFIERS.includes(user.employeeId.toLowerCase())
+    ) {
+      throw new UnauthorizedException(
+        'Demo accounts are disabled. Please register your own personnel account to log in.',
+      );
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);

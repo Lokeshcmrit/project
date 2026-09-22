@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, UserPlus, LogIn, ShieldAlert } from 'lucide-react';
 
 const roles = [
   {
@@ -12,8 +12,10 @@ const roles = [
     color: 'border-blue-600 hover:border-blue-400',
     badge: 'bg-blue-900/50 text-blue-300 border border-blue-700/50',
     btnColor: 'bg-blue-600 hover:bg-blue-500',
-    route: '/login/user',
+    loginRoute: '/login/user',
+    registerRoute: '/register?role=USER_PILOT',
     role: 'USER_PILOT',
+    roleName: 'Loco Pilot',
   },
   {
     icon: '🛡️',
@@ -23,8 +25,10 @@ const roles = [
     color: 'border-yellow-600 hover:border-yellow-400',
     badge: 'bg-yellow-900/50 text-yellow-300 border border-yellow-700/50',
     btnColor: 'bg-yellow-600 hover:bg-yellow-500',
-    route: '/login/admin',
+    loginRoute: '/login/admin',
+    registerRoute: '/register?role=ADMIN',
     role: 'ADMIN',
+    roleName: 'Admin',
   },
   {
     icon: '🏢',
@@ -34,8 +38,10 @@ const roles = [
     color: 'border-emerald-600 hover:border-emerald-400',
     badge: 'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50',
     btnColor: 'bg-emerald-600 hover:bg-emerald-500',
-    route: '/login/department',
+    loginRoute: '/login/department',
+    registerRoute: '/register?role=DEPARTMENT',
     role: 'DEPARTMENT',
+    roleName: 'Department',
   },
 ];
 
@@ -45,8 +51,8 @@ export default function RoleSelectPage() {
 
   return (
     <div className="min-h-screen bg-[#050b14] flex flex-col items-center justify-center px-6 py-12">
-      {/* Header - Clean title with corridor and prototype badge removed as requested */}
-      <div className="text-center mb-10 max-w-2xl">
+      {/* Header */}
+      <div className="text-center mb-8 max-w-2xl">
         <div className="text-5xl mb-3">🚆</div>
         <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
           RailSync AI
@@ -107,24 +113,30 @@ export default function RoleSelectPage() {
               </p>
             </div>
 
-            <div className="pt-2 border-t border-[#1f3e72]">
-              {/* Single Clean Sign In button (1-Click Launch removed as requested) */}
+            <div className="pt-4 border-t border-[#1f3e72] space-y-2">
               <button
                 type="button"
-                onClick={() => navigate(r.route)}
-                className={`w-full py-2.5 rounded-lg text-xs font-semibold text-white ${r.btnColor} transition-all flex items-center justify-center gap-2 shadow-lg`}
+                onClick={() => navigate(r.registerRoute)}
+                className={`w-full py-2.5 rounded-lg text-xs font-bold text-white ${r.btnColor} transition-all flex items-center justify-center gap-2 shadow-lg`}
               >
-                Sign In with Password →
+                <UserPlus size={14} /> Register as {r.roleName}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(r.loginRoute)}
+                className="w-full py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-[#0f2744] hover:bg-[#16365d] border border-[#1f3e72] transition-all flex items-center justify-center gap-2"
+              >
+                <LogIn size={13} /> Sign In with Registered Account
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      <p className="mt-8 text-xs text-slate-500">
-        Need to register a custom staff account?{' '}
-        <Link to="/register" className="text-blue-400 hover:text-blue-300 underline">
-          Register new personnel
+      <p className="text-xs text-slate-400 text-center">
+        New personnel?{' '}
+        <Link to="/register" className="text-blue-400 hover:text-blue-300 font-semibold underline">
+          Create a new registered account here
         </Link>
       </p>
     </div>

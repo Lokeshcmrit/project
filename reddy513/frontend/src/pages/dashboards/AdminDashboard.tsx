@@ -427,10 +427,15 @@ function AdminRequests() {
   );
 }
 
-// ── Weekly Schedule ───────────────────────────────────────
+// ── Weekly Schedule & Monthly Heatmap ─────────────────────
 function AdminSchedule() {
   const [swimlanes, setSwimlanes] = useState<any>({});
-  useEffect(() => { optimizerAPI.weeklySchedule().then(r => setSwimlanes(r.data)).catch(() => {}); }, []);
+  const [heatmap, setHeatmap] = useState<any[]>([]);
+
+  useEffect(() => {
+    optimizerAPI.weeklySchedule().then(r => setSwimlanes(r.data)).catch(() => {});
+    optimizerAPI.monthlyHeatmap().then(r => setHeatmap(Array.isArray(r.data) ? r.data : [])).catch(() => {});
+  }, []);
 
   const depts = ['ENGINEERING', 'TRACTION_DISTRIBUTION', 'SIGNAL_TELECOM'];
   const deptColors: Record<string, string> = {
@@ -440,33 +445,76 @@ function AdminSchedule() {
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: 'Outfit' }}>7-Day Maintenance Schedule</h2>
-      <div className="space-y-4">
-        {depts.map(dept => (
-          <div key={dept} className="glass-card p-5">
-            <h3 className="text-sm font-bold text-slate-300 mb-4">{dept.replace(/_/g, ' ')}</h3>
-            <div className="space-y-2">
-              {(swimlanes[dept] || []).length === 0 ? (
-                <p className="text-slate-500 text-xs">No scheduled blocks this week</p>
-              ) : (
-                (swimlanes[dept] || []).map((item: any) => (
-                  <div key={item.id} className="flex items-center gap-3 text-xs">
-                    <span className={`${deptColors[dept]} px-2 py-1 rounded text-white font-semibold min-w-[120px] truncate`}>
-                      {item.dateStr}
-                    </span>
-                    <span className="text-slate-300 flex-1 truncate">{item.title}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      item.status === 'SCHEDULED' ? 'bg-emerald-900/50 text-emerald-300' :
-                      item.status === 'IN_PROGRESS' ? 'bg-cyan-900/50 text-cyan-300' :
-                      'bg-blue-900/50 text-blue-300'
-                    }`}>{item.status}</span>
-                  </div>
-                ))
-              )}
+    <div className="space-y-8">
+      {/* 7-Day Swimlanes */}
+      <div>
+        <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Outfit' }}>7-Day Department Maintenance Schedule</h2>
+        <p className="text-xs text-slate-400 mb-6">Cross-department coordinated maintenance possessions across the corridor</p>
+        <div className="space-y-4">
+          {depts.map(dept => (
+            <div key={dept} className="glass-card p-5">
+              <h3 className="text-sm font-bold text-slate-300 mb-4">{dept.replace(/_/g, ' ')}</h3>
+              <div className="space-y-2">
+                {(swimlanes[dept] || []).length === 0 ? (
+                  <p className="text-slate-500 text-xs">No scheduled blocks this week</p>
+                ) : (
+                  (swimlanes[dept] || []).map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-3 text-xs bg-[#0a192f] p-2.5 rounded-lg border border-[#1f3e72]/50">
+                      <span className={`${deptColors[dept]} px-2.5 py-1 rounded text-white font-semibold min-w-[110px] text-center`}>
+                        {item.dateStr}
+                      </span>
+                      <span className="text-slate-200 font-medium flex-1 truncate">{item.title}</span>
+                      <span className="text-slate-400 text-[11px] truncate">{item.segmentLabel}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        item.status === 'SCHEDULED' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50' :
+                        item.status === 'IN_PROGRESS' ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-700/50' :
+                        'bg-blue-900/50 text-blue-300 border border-blue-700/50'
+                      }`}>{item.status}</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 30-Day Corridor Asset Availability Heatmap */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'Outfit' }}>30-Day Corridor Asset Availability Heatmap</h2>
+            <p className="text-xs text-slate-400">Network availability percentage and conflict density forecast</p>
           </div>
-        ))}
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="flex items-center gap-1.5 text-emerald-400"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/80 inline-block" /> ≥95% (Optimal)</span>
+            <span className="flex items-center gap-1.5 text-amber-400"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500/80 inline-block" /> 80-94% (Caution)</span>
+            <span className="flex items-center gap-1.5 text-red-400"><span className="w-2.5 h-2.5 rounded-sm bg-red-500/80 inline-block" /> &lt;80% (Critical)</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-5">
+          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2.5">
+            {heatmap.map((cell: any, idx: number) => {
+              const avail = cell.availabilityPercentage ?? 100;
+              const colorClass =
+                avail >= 95 ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300' :
+                avail >= 80 ? 'bg-amber-950/60 border-amber-700/60 text-amber-300' :
+                'bg-red-950/60 border-red-700/60 text-red-300';
+              return (
+                <div
+                  key={idx}
+                  className={`p-2.5 rounded-lg border text-center transition-transform hover:scale-105 ${colorClass}`}
+                  title={`${cell.dateStr}: ${avail}% availability, ${cell.blocksScheduled} blocks, ${cell.totalDowntimeMinutes}m downtime`}
+                >
+                  <div className="text-[10px] text-slate-400 font-mono">{cell.dateStr ? cell.dateStr.slice(5) : ''}</div>
+                  <div className="text-base font-bold my-0.5">{avail}%</div>
+                  <div className="text-[9px] opacity-80">{cell.blocksScheduled || 0} blocks</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
