@@ -36,3 +36,15 @@ This log documents all architectural choices, engineering trade-offs, and design
 - **Choice**: JWT bearer token authentication with server-side NestJS `RolesGuard`.
 - **Constraint**: Loco Pilots (`USER_PILOT`) are strictly forbidden from mutation endpoints (`POST /requests`, `PATCH /requests/*/schedule`, etc.) returning HTTP 403 Forbidden.
 - **Password Security**: Bcrypt hash with salt rounds = 10.
+
+## 6. Cloud Hosting & Serverless Database Architecture
+- **Choice**: Distributed Cloud Deployment — Vercel (Frontend SPA) + Render (NestJS API & WebSockets) + Neon (Serverless PostgreSQL).
+- **Rationale**:
+  - **Vercel**: Provides sub-second global edge delivery and static asset caching for the React SPA.
+  - **Render**: Supports persistent, non-serverless Node.js execution required for stateful Socket.io WebSocket rooms and background optimization calculations.
+  - **Neon PostgreSQL**: Provides instant scaling, pooled connection management, and zero cold-start database reliability.
+
+## 7. Dynamic API & WebSocket Host Resolution
+- **Choice**: Multi-environment client-side resolver (`getApiBaseUrl()`).
+- **Rationale**: Enables seamless transition across local development (`http://localhost:4000`), local network testing (`192.168.x.x`), and live cloud environments (`https://*.onrender.com`) without manual code re-bundling.
+

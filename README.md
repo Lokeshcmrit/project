@@ -22,34 +22,58 @@ Traditional block planning in Indian Railways is manually coordinated across dis
 
 ```mermaid
 graph TD
-    subgraph Frontend ["Frontend (Vite + React 18 + TailwindCSS)"]
+    subgraph Client ["Client Tier (Browser / Mobile)"]
         AdminUI["Operations Admin Dashboard\n(OCC, Map, Queue, AI Studio, Swimlanes, Heatmap)"]
         DeptUI["Department Engineer Dashboard\n(Defect Filing, Photo Proof, Status Tracker)"]
         PilotUI["Loco Pilot Portal\n(HUD, Route Map, Live Caution Orders)"]
     end
 
-    subgraph Backend ["Backend Service (NestJS 10 + TypeScript)"]
-        REST["REST API & JWT RBAC Guards"]
-        WS["Socket.io WebSocket Gateway\n(Room Segregation)"]
+    subgraph HostingFrontend ["Frontend Hosting (Vercel)"]
+        VercelCDN["Vercel Global Edge Network\n(SPA React 18 + Vite + TailwindCSS)"]
+    end
+
+    subgraph HostingBackend ["Backend Cloud Service (Render)"]
+        REST["REST API & JWT RBAC Guards\n(NestJS 10 + TypeScript)"]
+        WS["Socket.io WebSocket Gateway\n(Room Segregation & Live Telemetry)"]
         OptEngine["Embedded Optimization Engine\n(BlockOptimizer & WeeklyMonthlyPlanner)"]
         XAIEngine["Explainable AI (XAI) Explainer"]
-        Storage["LocalStorageAdapter (/uploads)"]
+        HealthRoute["Health Check Endpoint (GET /)"]
     end
 
-    subgraph Database ["Persistence Layer"]
-        Prisma["Prisma ORM"]
-        Postgres[("PostgreSQL 16\n(Strict Relational Safety Schema)")]
+    subgraph CloudDB ["Cloud Database Tier (Neon)"]
+        Prisma["Prisma ORM Client"]
+        NeonDB[("Neon Serverless PostgreSQL\n(Strict Relational Safety Schema)")]
     end
 
-    AdminUI <-->|REST / WS| REST
-    DeptUI <-->|REST / WS| REST
-    PilotUI <-->|REST / WS| REST
+    AdminUI <--> VercelCDN
+    DeptUI <--> VercelCDN
+    PilotUI <--> VercelCDN
+
+    VercelCDN <-->|HTTPS REST / WSS| REST
+    VercelCDN <-->|WebSocket| WS
     REST <--> OptEngine
     REST <--> XAIEngine
-    REST <--> Storage
     REST <--> Prisma
-    Prisma <--> Postgres
+    Prisma <--> NeonDB
 ```
+
+---
+
+## 📋 System Requirements
+
+### Development & Local Execution
+- **Node.js**: `v18.0.0` or higher (Recommended: `v20.x` or `v22.x` / `v24.x`)
+- **Package Manager**: `npm` `v9.x` or higher
+- **Database**:
+  - **Option A (Cloud)**: [Neon Serverless PostgreSQL](https://neon.tech) (Recommended)
+  - **Option B (Local)**: PostgreSQL `16+` (configured in `backend/.env`)
+- **Browsers**: Google Chrome 100+, Microsoft Edge 100+, Mozilla Firefox 100+, Safari 15+
+- **Operating System**: Windows 10/11, macOS 12+, or Ubuntu/Debian Linux
+
+### Cloud Production Stack
+- **Frontend Hosting**: [Vercel](https://vercel.com) (React 18 SPA)
+- **Backend Hosting**: [Render](https://render.com) (Node.js Web Service with WebSockets)
+- **Cloud Database**: [Neon](https://neon.tech) (Serverless PostgreSQL with Connection Pooling)
 
 ---
 
@@ -67,48 +91,92 @@ The system comes pre-seeded with real-world Indian Railways roles on the Secunde
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Deployment Guide
 
-### Option 1: Run with Docker Compose (Single Command)
-
-Prerequisites: [Docker & Docker Desktop](https://www.docker.com/)
-
-```bash
-# Clone and enter directory
-cd reddy513
-
-# Start PostgreSQL, Backend, and Frontend containers
-docker-compose up --build
-```
-
-- **Frontend Portal**: [http://localhost:5173](http://localhost:5173)
-- **Backend API**: [http://localhost:4000](http://localhost:4000)
-- **PostgreSQL Database**: `localhost:5432`
+### 1. Cloud Database (Neon PostgreSQL)
+1. Create a free project on [Neon.tech](https://neon.tech) named `railsync`.
+2. Copy your pooled connection string:
+   ```env
+   DATABASE_URL="postgresql://neondb_owner:<password>@ep-bitter-poetry-b4zm5bmo-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
+   ```
+3. Push schema and seed initial corridor data:
+   ```bash
+   cd backend
+   npx prisma db push
+   npx ts-node prisma/seed.ts
+   ```
 
 ---
 
-### Option 2: Run Locally for Development
+### 2. Backend Deployment (Render)
+1. Create a new **Web Service** on [Render.com](https://render.com) from this repository.
+2. Configure settings:
+   - **Root Directory**: `(Leave empty / repository root)`
+   - **Build Command**: `npm install && npm --prefix backend run build`
+   - **Start Command**: `npm run start:prod`
+3. Environment Variables:
+   - `DATABASE_URL`: `(Your Neon PostgreSQL connection string)`
+   - `PORT`: `4000`
+   - `JWT_SECRET`: `railsync_super_secure_jwt_secret_key_2026_sih`
+   - `JWT_EXPIRES_IN`: `7d`
+   - `NODE_ENV`: `production`
 
-Prerequisites: Node.js 18+, PostgreSQL (running on port `5433` or configured in `backend/.env`)
+---
 
-#### 1. Backend Setup:
-```bash
-cd backend
-npm install
-npx prisma generate
-npx prisma db push
-npm run prisma:seed
-npm run start:dev
+### 3. Frontend Deployment (Vercel)
+1. Import repository on [Vercel](https://vercel.com).
+2. Configure environment variable:
+   - **Key**: `VITE_API_URL`
+   - **Value**: `https://<your-render-backend-url>.onrender.com` *(no trailing slash)*
+3. Deploy. The dynamic API client automatically connects to your live cloud backend.
+
+---
+
+## 💻 Local Quick-Start
+
+### One-Click Fast Launcher (Windows)
+Double-click `start-project.bat` or run in PowerShell:
+```powershell
+./start-project.ps1
 ```
-*Backend runs at `http://localhost:4000`*
+This automatically launches:
+- PostgreSQL service
+- Backend NestJS server (`http://localhost:4000`)
+- Frontend Vite dev server (`http://localhost:5173`)
+- Opens your browser directly to the Role Selection portal.
 
-#### 2. Frontend Setup:
+### Manual Setup
 ```bash
-cd frontend
+# 1. Install all dependencies
 npm install
+
+# 2. Start Backend
+cd backend
+npm run start:dev
+
+# 3. Start Frontend (in a new terminal)
+cd frontend
 npm run dev
 ```
-*Frontend runs at `http://localhost:5173`*
+
+---
+
+## ⚙️ Environment Variables Reference
+
+### Backend (`backend/.env`)
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/neondb?sslmode=require` |
+| `PORT` | HTTP Server port | `4000` |
+| `JWT_SECRET` | Secret key for JWT signing | `railsync_super_secure_jwt_secret_key_2026_sih` |
+| `JWT_EXPIRES_IN` | JWT expiration duration | `7d` |
+| `UPLOAD_DIR` | Directory for uploaded photo evidence | `./uploads` |
+| `FRONTEND_URL` | Allowed origin for CORS | `http://localhost:5173` |
+
+### Frontend (`frontend/.env` / Vercel)
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | Base URL of the backend API | `https://railsync-backend.onrender.com` |
 
 ---
 
@@ -140,8 +208,6 @@ Implemented in [`backend/src/engine/xaiExplainer.ts`](file:///c:/Users/omkar/One
 
 ## 🧪 Testing & Verification
 
-Run the automated test suite covering optimization formulas, conflict detection, and role-based security:
-
 ```bash
 # Run backend Jest unit tests
 npm --prefix backend run test
@@ -156,9 +222,11 @@ npm --prefix frontend run build
 
 ```
 reddy513/
-├── backend/                      # NestJS 10 Service
-│   ├── prisma/                   # Schema, relations & corridor seed script
+├── backend/                      # NestJS 10 Backend Service
+│   ├── prisma/                   # Schema, migrations & corridor seed script
 │   ├── src/
+│   │   ├── app.controller.ts     # Health check & root API status
+│   │   ├── app.module.ts         # Root module configuration
 │   │   ├── engine/               # Optimizer, XAI & Planner engines + specs
 │   │   ├── modules/
 │   │   │   ├── auth/             # JWT, Bcrypt, Passport & RolesGuard
@@ -172,10 +240,11 @@ reddy513/
 │   └── package.json
 ├── frontend/                     # React 18 + Vite + TailwindCSS
 │   ├── src/
-│   │   ├── api/                  # Axios typed API client
+│   │   ├── api/                  # Axios typed API client (dynamic host resolution)
 │   │   ├── components/           # CorridorTrackMap, ProtectedRoute, Layout
+│   │   ├── sockets/              # Socket.io client connection manager
 │   │   ├── pages/
-│   │   │   ├── LoginPage.tsx     # Role-based login
+│   │   │   ├── LoginPage.tsx     # Role-based login with clear network error handling
 │   │   │   ├── RegisterPage.tsx  # Employee registration
 │   │   │   ├── RoleSelectPage.tsx# Interactive portal selector
 │   │   │   └── dashboards/
@@ -187,6 +256,8 @@ reddy513/
 │   ├── Dockerfile
 │   └── package.json
 ├── docker-compose.yml            # Multi-container production deployment
+├── start-project.bat             # Fast Windows launcher
+├── start-project.ps1             # Fast PowerShell launcher
 ├── DECISIONS.md                  # Architectural decisions & design rationale
 └── README.md                     # Comprehensive project documentation
 ```
