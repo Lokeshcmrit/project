@@ -13,8 +13,9 @@ export function getApiBaseUrl(): string {
     }
   }
 
-  // Fallback for Vercel or remote access from another laptop
-  return 'https://railsync-api-2026.loca.lt';
+  // Fallback for Vercel or remote access — update this after Render deployment
+  // Set VITE_API_URL in Vercel env vars to override this
+  return 'https://railsync-backend.onrender.com';
 }
 
 const BASE = getApiBaseUrl();

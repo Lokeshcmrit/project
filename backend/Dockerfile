@@ -18,5 +18,5 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 RUN mkdir -p /app/uploads
 
-EXPOSE 4000
-CMD ["sh", "-c", "npx prisma db push && npx ts-node --transpile-only prisma/seed.ts && node dist/main"]
+EXPOSE ${PORT:-4000}
+CMD ["sh", "-c", "npx prisma db push && npx ts-node --transpile-only prisma/seed.ts && node dist/src/main"]

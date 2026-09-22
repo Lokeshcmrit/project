@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: railsync-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_S4EOhpcF1Lme@ep-bitter-poetry-b4zm5bmo-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - key: JWT_SECRET
+        value: railsync_super_secure_jwt_secret_key_2026_sih
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: PORT
+        value: "4000"
+      - key: FRONTEND_URL
+        value: https://train-ai-project.vercel.app
+      - key: UPLOAD_DIR
+        value: /app/uploads
