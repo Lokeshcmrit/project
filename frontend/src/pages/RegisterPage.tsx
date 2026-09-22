@@ -127,7 +127,11 @@ export default function RegisterPage() {
         else navigate('/dashboard/user');
       }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid registration details. Please verify your data and try again.');
+      if (!err.response) {
+        setError('Cannot connect to the backend server. Please verify the backend service is online and reachable.');
+      } else {
+        setError(err.response?.data?.message || 'Invalid registration details. Please verify your data and try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout';
 import CorridorTrackMap from '../../components/CorridorTrackMap';
 import AdminOptimizerStudio from './AdminOptimizerStudio';
-import { requestsAPI, corridorAPI, optimizerAPI, auditAPI, notificationsAPI } from '../../api/client';
+import { requestsAPI, corridorAPI, optimizerAPI, auditAPI, notificationsAPI, getApiBaseUrl } from '../../api/client';
 import { useAuth } from '../../store/AuthContext';
 import { getSocket } from '../../sockets/socket';
 import {
@@ -266,7 +266,7 @@ function AdminRequests() {
                     {selected.photoUrls.map((url: string) => (
                       <img
                         key={url}
-                        src={`http://localhost:4000${url}`}
+                        src={`${getApiBaseUrl()}${url}`}
                         alt="Evidence"
                         className="photo-thumb"
                         onClick={() => setPhotoModal(url)}
@@ -420,7 +420,7 @@ function AdminRequests() {
       {/* Photo Modal */}
       {photoModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setPhotoModal(null)}>
-          <img src={`http://localhost:4000${photoModal}`} className="max-w-2xl max-h-[80vh] rounded-xl object-contain" />
+          <img src={`${getApiBaseUrl()}${photoModal}`} className="max-w-2xl max-h-[80vh] rounded-xl object-contain" />
         </div>
       )}
     </div>

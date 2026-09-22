@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { corridorAPI, trainsAPI } from '../api/client';
+import { corridorAPI, trainsAPI, getApiBaseUrl } from '../api/client';
 import { getSocket } from '../sockets/socket';
 import {
   AlertTriangle,
@@ -133,7 +133,7 @@ export default function CorridorTrackMap({
     setUpdatingStatus(true);
     try {
       const token = localStorage.getItem('railsync_token');
-      await fetch(`http://localhost:4000/corridor/segments/${selectedSegment.id}/status`, {
+      await fetch(`${getApiBaseUrl()}/corridor/segments/${selectedSegment.id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -19,20 +19,25 @@ if (-not $pgRunning) {
 }
 
 # 2. Start Backend
-Write-Host "[2/3] Starting Backend server on port 4000..." -ForegroundColor Yellow
+Write-Host "[2/4] Starting Backend server on port 4000..." -ForegroundColor Yellow
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$root\backend'; npm run start:dev"
 
-# 3. Start Frontend
-Write-Host "[3/3] Starting Frontend server on port 5173..." -ForegroundColor Yellow
+# 3. Start Public Live Tunnel for Vercel / Remote Devices
+Write-Host "[3/4] Starting Public Live Tunnel for Vercel (railsync-api-2026.loca.lt)..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "npx --yes localtunnel --port 4000 --subdomain railsync-api-2026"
+
+# 4. Start Frontend
+Write-Host "[4/4] Starting Frontend server on port 5173..." -ForegroundColor Yellow
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$root\frontend'; npm run dev"
 
-# 4. Open Browser
+# 5. Open Browser
 Start-Sleep -Seconds 3
 Write-Host "Opening http://localhost:5173 in default browser..." -ForegroundColor Green
 Start-Process "http://localhost:5173"
 
 Write-Host "===================================================" -ForegroundColor Cyan
 Write-Host "Project is running!" -ForegroundColor Cyan
-Write-Host "Frontend: http://localhost:5173" -ForegroundColor White
-Write-Host "Backend:  http://localhost:4000" -ForegroundColor White
+Write-Host "Frontend (Local):  http://localhost:5173" -ForegroundColor White
+Write-Host "Backend (Local):   http://localhost:4000" -ForegroundColor White
+Write-Host "Backend (Public):  https://railsync-api-2026.loca.lt" -ForegroundColor Green
 Write-Host "===================================================" -ForegroundColor Cyan

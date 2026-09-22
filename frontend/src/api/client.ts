@@ -1,6 +1,23 @@
 import axios from 'axios';
 
-const BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000';
+export function getApiBaseUrl(): string {
+  const envUrl = (import.meta as any).env?.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:4000';
+    }
+  }
+
+  // Fallback for Vercel or remote access from another laptop
+  return 'https://railsync-api-2026.loca.lt';
+}
+
+const BASE = getApiBaseUrl();
 
 const api = axios.create({ baseURL: BASE });
 

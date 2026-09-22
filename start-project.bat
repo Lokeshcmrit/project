@@ -16,20 +16,25 @@ if %errorlevel% neq 0 (
 )
 
 :: 2. Start Backend
-echo [2/3] Starting Backend server on port 4000...
+echo [2/4] Starting Backend server on port 4000...
 start "RailSync AI - Backend (Port 4000)" cmd /k "cd /d %~dp0backend && npm run start:dev"
 
-:: 3. Start Frontend
-echo [3/3] Starting Frontend server on port 5173...
+:: 3. Start Public Live Tunnel for Vercel / Remote Devices
+echo [3/4] Starting Public Live Tunnel for Vercel (railsync-api-2026.loca.lt)...
+start "RailSync AI - Public Live Tunnel" cmd /k "npx --yes localtunnel --port 4000 --subdomain railsync-api-2026"
+
+:: 4. Start Frontend
+echo [4/4] Starting Frontend server on port 5173...
 start "RailSync AI - Frontend (Port 5173)" cmd /k "cd /d %~dp0frontend && npm run dev"
 
-:: 4. Open Browser
+:: 5. Open Browser
 timeout /t 4 /nobreak >nul
 echo Opening RailSync AI in your default browser...
 start http://localhost:5173
 
 echo ===================================================
 echo Project is launching! 
-echo Frontend: http://localhost:5173
-echo Backend:  http://localhost:4000
+echo Frontend (Local):  http://localhost:5173
+echo Backend (Local):   http://localhost:4000
+echo Backend (Public):  https://railsync-api-2026.loca.lt
 echo ===================================================

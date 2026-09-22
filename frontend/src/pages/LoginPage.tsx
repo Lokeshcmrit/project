@@ -121,7 +121,11 @@ export default function LoginPage({ role }: Props) {
       login(token, loggedUser);
       navigate(config.dashRoute);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid Employee ID / Email or Password. Please try again.');
+      if (!err.response) {
+        setError('Cannot connect to the backend server. Please verify the backend service is online and reachable.');
+      } else {
+        setError(err.response?.data?.message || 'Invalid Employee ID / Email or Password. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
